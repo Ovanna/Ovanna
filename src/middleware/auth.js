@@ -36,51 +36,93 @@
 // }
 
 // module.exports = auth
+const { users, transaction } = require("../../models");
 
-
-
-
-
-
-
-
-const jwt = require('jsonwebtoken')
+const jwt = require("jsonwebtoken");
+const { getUsers } = require("../controllers/user");
 
 exports.auth = (req, res, next) => {
+  try {
+    let header = req.header("Authorization");
 
-    try {
-        
-        let header = req.header('Authorization')
+    if (!header) {
+      return res.send({
+        status: "failed",
+        message: "Unauthorized",
+      });
+    }
 
-        if(!header){
-            return res.send({
-                status: 'failed',
-                message: 'Forbidden Access!'
-            })
-        }        
+    const token = header.replace("Bearer ", "");
 
-        const token = header.replace('Bearer ', '')
+    const secretKey = process.env.secretKey;
 
-        const secretKey = process.env.SECRET_KEY
+    const verified = jwt.verify(token, secretKey);
 
-        const verified = jwt.verify(token, secretKey) 
-    
-        req.idUser = verified 
+    req.idUser = verified;
 
-        next()
+    next();
+  } catch (error) {
+    console.log(error);
+    res.status({
+      status: "failed",
+      message: "Server Error",
+    });
+  }
+};
 
-    } catch (error) {
+exports.adminAuth = async (req, res, next) => {
+  try {
+    const findAdmin = await users.findOne({
+      where: {
+        id: req.idUser.id,
+      },
+    });
 
-        console.log(err)
-        res.status({  
-            status: 'failed',
-            message: 'Server Error'
-        })
+    if (findAdmin.status !== "admin") {
+      return res.send({
+        status: "failed",
+        message: "Forbidden access",
+      });
+    }
 
-    }    
-}
+    next();
+  } catch (error) {
+    console.log(error);
+    res.status({
+      status: "failed",
+      message: "Server Error",
+    });
+  }
+};
+exports.transactionAuth = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const findAdmin = await users.findOne({
+      where: {
+        id: req.idUser.id,
+      },
+    });
 
+    const findTransaction = await transaction.findOne({
+      where: {
+        userId: req.idUser.id,
+        id: id,
+      },
+    });
 
+    if (findAdmin.status !== "admin" && findTransaction === null) {
+      return res.status(403).send({
+        status: "failed",
+        message: "Forbidden access",
+      });
+    }
 
-
-
+    next();
+  } catch (error) {
+    console.log(error);
+    res.status({
+      status: "failed",
+      message: "Server Error",
+    });
+  }
+};

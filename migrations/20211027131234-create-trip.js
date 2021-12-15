@@ -17,7 +17,7 @@ module.exports = {
           key: "id",
           model: "countries",
         },
-        onDelete: "CASCADE",
+        onDelete: "SET NULL",
         onUpdate: "CASCADE",
       },
       accomodation: {
@@ -31,6 +31,9 @@ module.exports = {
       },
       day: {
         type: Sequelize.STRING,
+      },
+      counterQty: {
+        type: Sequelize.INTEGER
       },
       night: {
         type: Sequelize.STRING,

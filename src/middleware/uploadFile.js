@@ -51,7 +51,7 @@ exports.uploadFile = (image) => {
   }).fields([
     {
       name: image,
-      maxCount: 1,
+      maxCount: 4,
     },
     // {
     //     name: audioFile,

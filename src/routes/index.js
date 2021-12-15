@@ -2,39 +2,83 @@ const express = require("express");
 
 const router = express.Router();
 
-const { uploadFile } = require('../middleware/uploadFile')
+const { checkAuth } = require("../controllers/auth");
+const { auth, adminAuth, transactionAuth } = require("../middleware/auth");
 
-const { register, login, getUser, editUser, deleteUser, getUsers } = require("../controllers/user");
+const { uploadFile } = require("../middleware/uploadFile");
 
-const { addCountry, getCountry, getCountrybyId, editCountry, deleteCountry } = require("../controllers/country");
+const {
+  register,
+  login,
+  getUser,
+  getUserById,
+  editUser,
+  deleteUser,
+  getUsers,
+} = require("../controllers/user");
 
-const { addTrip, getTrip, getTripbyId, editTrip, deleteTrip } = require("../controllers/trip");
+const {
+  addCountry,
+  getCountry,
+  getCountrybyId,
+  editCountry,
+  deleteCountry,
+} = require("../controllers/country");
 
-const { addTransaction, getTransaction, getTransactionbyId, editTransaction, deleteTransaction } = require("../controllers/transaction");
+const {
+  addTrip,
+  getTrip,
+  getTripbyId,
+  editTrip,
+  deleteTrip,
+} = require("../controllers/trip");
+
+const {
+  addTransaction,
+  getTransaction,
+  getTransactionbyId,
+  editTransaction,
+  deleteTransaction,
+  getTransactionbyCreated,
+} = require("../controllers/transaction");
+
+const { addBookmark } = require("../controllers/bookmark");
+
+router.get("/authorization", auth, checkAuth);
 
 router.post("/register", register);
 router.post("/login", login);
 router.get("/users", getUsers);
 router.get("/user/:id", getUser);
-router.patch("/user/:id", uploadFile('image'), editUser);
+router.get("/user", auth, getUserById);
+router.patch("/user", auth, uploadFile("image"), editUser);
 router.delete("/user/:id", deleteUser);
 
-router.post("/country", addCountry);
+router.post("/country", auth, adminAuth, addCountry);
 router.get("/countries", getCountry);
 router.get("/country/:id", getCountrybyId);
-router.patch("/country/:id", editCountry);
-router.delete("/country/:id", deleteCountry);
+router.patch("/country/:id", auth, adminAuth, editCountry);
+router.delete("/country/:id", auth, deleteCountry);
 
-router.post("/trip", uploadFile('image'),addTrip);
+router.post("/trip", auth, uploadFile("image"), addTrip);
 router.get("/trips", getTrip);
 router.get("/trip/:id", getTripbyId);
-router.patch("/trip/:id", uploadFile('image'), editTrip);
-router.delete("/trip/:id", deleteTrip);
+router.patch("/trip/:id", auth, adminAuth, uploadFile("image"), editTrip);
+router.delete("/trip/:id", auth, deleteTrip);
 
-router.post("/transaction", uploadFile('image'), addTransaction);
+router.post("/transaction", auth, uploadFile("image"), addTransaction);
 router.get("/orders", getTransaction);
 router.get("/transaction/:id", getTransactionbyId);
-router.patch("/transaction/:id", uploadFile('image'), editTransaction);
+router.get("/transaction", auth, getTransactionbyCreated);
+router.patch(
+  "/transaction/:id",
+  auth,
+  transactionAuth,
+  uploadFile("image"),
+  editTransaction
+);
 router.delete("/transaction/:id", deleteTransaction);
+
+router.post("/bookmark", auth, addBookmark);
 
 module.exports = router;

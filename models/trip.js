@@ -15,12 +15,6 @@ module.exports = (sequelize, DataTypes) => {
           name: "countryId",
         },
       });
-      trip.hasMany(models.transaction, {
-        as: "trip",
-        foreignKey: {
-          name: "tripId",
-        },
-      });
     }
   }
   trip.init(
@@ -31,6 +25,7 @@ module.exports = (sequelize, DataTypes) => {
       transportation: DataTypes.STRING,
       eat: DataTypes.STRING,
       day: DataTypes.STRING,
+      counterQty: DataTypes.INTEGER,
       night: DataTypes.STRING,
       dateTrip: DataTypes.DATE,
       price: DataTypes.STRING,

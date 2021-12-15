@@ -63,6 +63,7 @@ exports.register = async (req, res) => {
     res.send({
       status: "success",
       data: responseData,
+      message: "Registered Succesfully",
     });
   } catch (error) {
     console.log(error);
@@ -78,17 +79,17 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const schema = joi
-      .object({
-        email: joi.string().email().required(),
-        password: joi.string().min(8).required(),
-      })
-      .validate(req.body);
+    const schema = joi.object({
+      email: joi.string().email().required(),
+      password: joi.string().min(8).required(),
+    });
 
-    if (schema.error) {
-      return res.send({
+    const { error } = schema.validate(req.body);
+
+    if (error) {
+      return res.status(400).send({
         status: "failed",
-        message: schema.error.details[0].message,
+        message: error.details[0].message,
       });
     }
 
@@ -130,8 +131,16 @@ exports.login = async (req, res) => {
       secretKey
     );
 
+    const checkData = await users.findOne({
+      where: {
+        email,
+      },
+      attributes: {
+        exclude: ["createdAt", "updatedAt", "password"],
+      },
+    });
     const responseData = {
-      email: email,
+      data: checkData,
       token: token,
     };
 
@@ -190,13 +199,53 @@ exports.getUser = async (req, res) => {
     });
   }
 };
+exports.getUserById = async (req, res) => {
+  try {
+    const { id } = req.idUser;
 
+    const getUser = await users.findOne({
+      where: { id: id },
+      attributes: { exclude: ["createdAt", "updatedAt", "password"] },
+    });
+
+    res.send({
+      status: "success",
+      data: getUser,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status({
+      status: "failed",
+      message: "Server Error",
+    });
+  }
+};
 exports.editUser = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.idUser;
     const data = req.body;
     const { password } = req.body;
     let image = null;
+
+    const schema = joi
+      .object({
+        fullName: joi.allow("").optional(),
+        email: joi.string().allow("").optional(),
+        password: joi.string().allow("").optional(),
+        gender: joi.string().allow("").optional(),
+        phone: joi.string().allow("").optional(),
+        address: joi.string().allow("").optional(),
+        image: joi.string().allow("").optional(),
+      })
+      .validate(data);
+
+    if (schema.error) {
+      return res.send({
+        status: "failed",
+        message: schema.error.details[0].message,
+      });
+    }
 
     const getUser = await users.findOne({
       where: {
@@ -211,7 +260,14 @@ exports.editUser = async (req, res) => {
       });
     }
 
-    if (req.files.image) {
+    if (!image && !req.files) {
+      const returnImage = await users.findOne({
+        where: {
+          id: getUser.id,
+        },
+      });
+      image = returnImage.image;
+    } else if (req.files.image) {
       image = req.files.image[0].filename;
     } else if (!image) {
       const returnImage = await users.findOne({
@@ -221,6 +277,11 @@ exports.editUser = async (req, res) => {
       });
       image = returnImage.image;
     }
+
+    const newData = {
+      ...data,
+      image,
+    };
 
     const dataUpdate = [];
     if (data.password !== undefined) {
@@ -241,7 +302,7 @@ exports.editUser = async (req, res) => {
     }
 
     if (data.password === undefined) {
-      await users.update(data, {
+      await users.update(newData, {
         where: {
           id: getUser.id,
         },
@@ -253,7 +314,7 @@ exports.editUser = async (req, res) => {
         id: getUser.id,
       },
       attributes: {
-        exclude: ["createAt", "updateAt"],
+        exclude: ["createdAt", "updatedAt", "password"],
       },
     });
 

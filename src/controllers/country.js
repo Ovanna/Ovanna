@@ -7,7 +7,7 @@ exports.addCountry = async (req, res) => {
 
     const schema = joi
       .object({
-        name: joi.string().allow("").required(),
+        name: joi.string().required(),
       })
       .validate(req.body);
 
@@ -17,20 +17,35 @@ exports.addCountry = async (req, res) => {
         message: schema.error.details[0].message,
       });
     }
+    const checkData = await country.findOne({
+      where: {
+        name: name,
+      },
 
-    const createCountry = await country.create({name});
+      attributes: { exclude: ["createdAt", "updatedAt"] },
+    });
+
+    if (checkData) {
+      return res.send({
+        status: "Failed",
+        message: "Country already created",
+      });
+    }
+
+    const createCountry = await country.create({ name });
 
     const checkCountry = await country.findOne({
       where: {
         id: createCountry.id,
       },
-    
+
       attributes: { exclude: ["createdAt", "updatedAt"] },
     });
 
     res.send({
       status: "success",
       data: checkCountry,
+      message: "Country success created",
     });
   } catch (error) {
     console.log(error);
@@ -41,11 +56,9 @@ exports.addCountry = async (req, res) => {
     });
   }
 };
-
 exports.getCountry = async (req, res) => {
   try {
     const getCountry = await country.findAll({
-      
       attributes: { exclude: ["createdAt", "updatedAt"] },
     });
 
@@ -71,7 +84,7 @@ exports.getCountrybyId = async (req, res) => {
         id,
       },
       attributes: { exclude: ["createdAt", "updatedAt"] },
-    })
+    });
 
     res.send({
       status: "success",
@@ -86,7 +99,6 @@ exports.getCountrybyId = async (req, res) => {
     });
   }
 };
-
 exports.editCountry = async (req, res) => {
   try {
     const { id } = req.params;
@@ -101,7 +113,7 @@ exports.editCountry = async (req, res) => {
     if (!getCountry) {
       return res.send({
         status: "failed",
-        message: "Country not created yet",
+        message: `Country with id ${id} not created yet`,
       });
     }
 
@@ -133,7 +145,6 @@ exports.editCountry = async (req, res) => {
     });
   }
 };
-
 exports.deleteCountry = async (req, res) => {
   try {
     const { id } = req.params;
