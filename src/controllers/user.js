@@ -17,7 +17,6 @@ exports.register = async (req, res) => {
         phone: joi.string().allow("").optional(),
         address: joi.string().allow("").optional(),
       })
-      .validate(data);
 
     if (schema.error) {
       return res.send({

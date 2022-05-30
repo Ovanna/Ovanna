@@ -42,7 +42,11 @@ const {
   getTransactionbyCreated,
 } = require("../controllers/transaction");
 
-const { addBookmark } = require("../controllers/bookmark");
+const {
+  addBookmark,
+  getBookmark,
+  getBookmarkbyIdUser,
+} = require("../controllers/bookmark");
 
 router.get("/authorization", auth, checkAuth);
 
@@ -80,5 +84,7 @@ router.patch(
 router.delete("/transaction/:id", deleteTransaction);
 
 router.post("/bookmark", auth, addBookmark);
+router.get("/bookmark/:id", auth, getBookmark);
+router.get("/your-bookmark", auth, getBookmarkbyIdUser);
 
 module.exports = router;

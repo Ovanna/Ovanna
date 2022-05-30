@@ -43,3 +43,55 @@ exports.addBookmark = async (req, res) => {
     });
   }
 };
+exports.getBookmark = async (req, res) => {
+  try {
+    const tripId = req.params.id;
+    const idUser = req.idUser.id;
+
+    const getBookmark = await bookmark.findOne({
+      where: {
+        tripId,
+        userId: idUser,
+      },
+    });
+    if (!getBookmark) {
+      res.send({
+        message: `Bookmark with Trip id ${tripId} not found`,
+      });
+    }
+    res.status(200).send({
+      status: "success",
+      message: `Get Bookmark with Trip id ${getBookmark.tripId}`,
+    });
+  } catch (error) {
+    res.status(500).send({
+      status: "failed",
+      message: `server error`,
+    });
+  }
+};
+exports.getBookmarkbyIdUser = async (req, res) => {
+  try {
+    const idUser = req.idUser.id;
+
+    const getBookmark = await bookmark.findOne({
+      where: {
+        userId: idUser,
+      },
+    });
+    if (!getBookmark) {
+      res.send({
+        message: `Bookmark with user id ${userId} not found`,
+      });
+    }
+    res.status(200).send({
+      status: "success",
+      message: `Get Bookmark with user id ${getBookmark.userId}`,
+    });
+  } catch (error) {
+    res.status(500).send({
+      status: "failed",
+      message: `server error`,
+    });
+  }
+};

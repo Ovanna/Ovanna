@@ -26,12 +26,9 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
   transaction.init({
-    counterQty: DataTypes.INTEGER,
-    userId: DataTypes.INTEGER,
-    total: DataTypes.INTEGER,
+    CashFlowName: DataTypes.STRING,
+    Price: DataTypes.INTEGER,
     status: DataTypes.STRING,
-    attachment: DataTypes.STRING,
-    tripId: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'transaction',
